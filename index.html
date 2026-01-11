@@ -273,34 +273,80 @@
             }).catch(function () { return false; });
         }
 
-        function loadAggregated() {
-            var url = window.VISITOR_DATA_URL || 'data/visitors.json';
-            return fetch(url).then(function (r) { return r.json(); }).then(function (list) {
-                if (Array.isArray(list)) {
-                    aggList = list;
-                    var total = 0;
-                    list.forEach(function (d) {
-                        var c = Number(d.count) || 0;
-                        total += c;
-                        var txt = [d.city, d.region, d.country, (c ? ('Visits: ' + c) : '')].filter(Boolean).join(', ');
-                        addMarker(Number(d.lat), Number(d.lon), txt);
-                    });
-                    if (statTotal) statTotal.textContent = String(total);
-                    if (statLocs) statLocs.textContent = String(list.length);
-                    if (list.length) {
-                        var b = cluster.getBounds && cluster.getBounds();
-                        if (b && b.isValid && b.isValid()) {
-                            map.fitBounds(b, { maxZoom: 4 });
-                        }
-                    }
-                    if (typeof L.heatLayer === 'function') {
-                        var heatData = list.map(function (d) { return [Number(d.lat), Number(d.lon), Math.max(0.2, Math.min(1, (Number(d.count) || 1) / 10))]; });
-                        heatLayer = L.heatLayer(heatData, { radius: 25, blur: 15 });
-                    }
-                    return true;
+        function rebuildLayersFromList(list) {
+            if (!Array.isArray(list)) return false;
+            aggList = list.slice();
+            if (cluster && cluster.clearLayers) cluster.clearLayers();
+            if (heatLayer && map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
+            var total = 0;
+            list.forEach(function (d) {
+                var c = Number(d.count) || 0;
+                total += c;
+                var txt = [d.city, d.region, d.country, (c ? ('Visits: ' + c) : '')].filter(Boolean).join(', ');
+                addMarker(Number(d.lat), Number(d.lon), txt);
+            });
+            if (statTotal) statTotal.textContent = String(total);
+            if (statLocs) statLocs.textContent = String(list.length);
+            if (list.length) {
+                var b = cluster.getBounds && cluster.getBounds();
+                if (b && b.isValid && b.isValid()) {
+                    map.fitBounds(b, { maxZoom: 4 });
                 }
-                return false;
-            }).catch(function () { return false; });
+            }
+            if (typeof L.heatLayer === 'function') {
+                var heatData = list.map(function (d) { return [Number(d.lat), Number(d.lon), Math.max(0.2, Math.min(1, (Number(d.count) || 1) / 10))]; });
+                heatLayer = L.heatLayer(heatData, { radius: 25, blur: 15 });
+            }
+            return true;
+        }
+
+        function loadAggregated() {
+            var remote = window.VISITOR_AGG_URL;
+            if (remote) {
+                return fetch(remote).then(function (r) { return r.json(); }).then(function (list) {
+                    return rebuildLayersFromList(list);
+                }).catch(function () { return false; });
+            } else {
+                return loadAggregatedFromLocal();
+            }
+        }
+
+        function loadAggregatedFromLocal() {
+            try {
+                var raw = localStorage.getItem('visitor_agg');
+                var list = raw ? JSON.parse(raw) : [];
+                return Promise.resolve(rebuildLayersFromList(list));
+            } catch (e) {
+                return Promise.resolve(false);
+            }
+        }
+
+        function addToLocalAgg(item) {
+            try {
+                var raw = localStorage.getItem('visitor_agg');
+                var list = raw ? JSON.parse(raw) : [];
+                var key = [item.city, item.region, item.country, item.lat, item.lon].join('|');
+                var found = false;
+                for (var i = 0; i < list.length; i++) {
+                    var k2 = [list[i].city, list[i].region, list[i].country, list[i].lat, list[i].lon].join('|');
+                    if (k2 === key) {
+                        list[i].count = (Number(list[i].count) || 0) + 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    list.push({
+                        city: item.city || '',
+                        region: item.region || '',
+                        country: item.country || '',
+                        lat: Number(item.lat),
+                        lon: Number(item.lon),
+                        count: 1
+                    });
+                }
+                localStorage.setItem('visitor_agg', JSON.stringify(list));
+            } catch (e) {}
         }
 
         function sendEvent() {
@@ -338,13 +384,19 @@
         if (btnHeat) btnHeat.addEventListener('click', showHeat);
         if (btnExpand) btnExpand.addEventListener('click', toggleExpand);
 
-        loadAggregated().then(function () {
-            return tryIpApi();
-        }).then(function (ok) {
+        var hasRemoteAgg = !!window.VISITOR_AGG_URL;
+        var hasPost = !!window.VISITOR_POST_URL;
+        tryIpApi().then(function (ok) {
             if (!ok) return tryIpApiCo();
             return ok;
         }).then(function () {
-            return sendEvent();
+            if (hasPost) return sendEvent();
+            return false;
+        }).then(function () {
+            if (!hasRemoteAgg && !isNaN(currentVisitor.lat) && !isNaN(currentVisitor.lon)) {
+                addToLocalAgg(currentVisitor);
+            }
+            return loadAggregated();
         }).catch(function () {
             if (ipEl && !ipEl.textContent) ipEl.textContent = 'Unavailable';
             if (locEl && !locEl.textContent) locEl.textContent = 'Unavailable';
