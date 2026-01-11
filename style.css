@@ -305,6 +305,67 @@ body {
     background: #f2f8fd;
 }
 
+.visitor-info {
+    background: #f9f9f9;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.visitor-info .label {
+    color: #7f8c8d;
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+#visitor-map {
+    height: 320px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.visitor-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0.5rem 0 0.75rem 0;
+}
+
+.visitor-toolbar .btn {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #3498db;
+    background: #fff;
+    color: #3498db;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.visitor-toolbar .btn:hover {
+    background: #f2f8fd;
+}
+
+.visitor-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    color: #34495e;
+}
+
+.visitor-stats .stat .label {
+    color: #7f8c8d;
+    margin-right: 0.25rem;
+}
+
+#visitor-map.expanded {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    z-index: 1000;
+}
+
 @media (max-width: 768px) {
     .layout {
         grid-template-columns: 1fr;
