@@ -171,6 +171,7 @@
             <p>&copy; 2025 Changyi Ma. All rights reserved.</p>
         </footer>
     </div>
+    <script>window.VISITOR_SKIP_LOCATE = true;</script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -206,6 +207,21 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script>
+    (function(){
+        var id = window.GA_MEASUREMENT_ID;
+        if (!id) return;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ window.dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', id);
+    })();
+    </script>
+    <script>
     document.addEventListener('DOMContentLoaded', function () {
         var ipEl = document.getElementById('visitor-ip');
         var locEl = document.getElementById('visitor-location');
@@ -227,6 +243,45 @@
         var currentVisitor = { ip: '', city: '', region: '', country: '', lat: NaN, lon: NaN };
         var aggList = [];
 
+        function fetchJSON(url, timeoutMs) {
+            var ctrl = new AbortController();
+            var t = setTimeout(function () { ctrl.abort(); }, timeoutMs || 3000);
+            return fetch(url, { signal: ctrl.signal }).then(function (r) { clearTimeout(t); return r.json(); });
+        }
+
+        function geoLocate() {
+            return new Promise(function (resolve) {
+                if (!navigator.geolocation) return resolve(false);
+                navigator.geolocation.getCurrentPosition(function (pos) {
+                    var lat = pos && pos.coords ? Number(pos.coords.latitude) : NaN;
+                    var lon = pos && pos.coords ? Number(pos.coords.longitude) : NaN;
+                    if (isNaN(lat) || isNaN(lon)) return resolve(false);
+                    currentVisitor.lat = lat;
+                    currentVisitor.lon = lon;
+                    addMarker(lat, lon, '');
+                    reverseGeocode(lat, lon).then(function (info) {
+                        if (info) {
+                            setInfo('', info.city, info.region, info.country);
+                        }
+                        sendGAEvent();
+                        resolve(true);
+                    }).catch(function () { resolve(true); });
+                }, function () { resolve(false); }, { enableHighAccuracy: false, timeout: 3000, maximumAge: 600000 });
+            });
+        }
+
+        function reverseGeocode(lat, lon) {
+            var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
+            return fetchJSON(url, 3000).then(function (d) {
+                var addr = d && d.address ? d.address : {};
+                return {
+                    city: addr.city || addr.town || addr.village || addr.hamlet || '',
+                    region: addr.state || addr.county || '',
+                    country: addr.country || ''
+                };
+            }).catch(function () { return null; });
+        }
+
         function addMarker(lat, lon, text) {
             if (isNaN(lat) || isNaN(lon)) return;
             var m = L.marker([lat, lon]);
@@ -247,13 +302,26 @@
             if (locEl) locEl.textContent = parts.join(', ');
         }
 
+        function sendGAEvent() {
+            if (typeof window.gtag !== 'function') return;
+            window.gtag('event', 'visitor_location', {
+                city: currentVisitor.city,
+                region: currentVisitor.region,
+                country: currentVisitor.country,
+                lat: currentVisitor.lat,
+                lon: currentVisitor.lon,
+                path: (window.location && window.location.pathname) || '/'
+            });
+        }
+
         function tryIpApi() {
-            return fetch('https://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,lat,lon,query').then(function (r) { return r.json(); }).then(function (d) {
+            return fetchJSON('https://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,lat,lon,query', 3000).then(function (d) {
                 if (d && d.status === 'success') {
                     setInfo(d.query, d.city, d.regionName || d.region, d.country);
                     currentVisitor.lat = Number(d.lat);
                     currentVisitor.lon = Number(d.lon);
                     addMarker(currentVisitor.lat, currentVisitor.lon, [d.city, d.regionName || d.region, d.country].filter(Boolean).join(', '));
+                    sendGAEvent();
                     return true;
                 }
                 return false;
@@ -261,12 +329,13 @@
         }
 
         function tryIpApiCo() {
-            return fetch('https://ipapi.co/json/').then(function (r) { return r.json(); }).then(function (d) {
+            return fetchJSON('https://ipapi.co/json/', 3000).then(function (d) {
                 if (d && d.ip) {
                     setInfo(d.ip, d.city, d.region, d.country_name);
                     currentVisitor.lat = Number(d.latitude);
                     currentVisitor.lon = Number(d.longitude);
                     addMarker(currentVisitor.lat, currentVisitor.lon, [d.city, d.region, d.country_name].filter(Boolean).join(', '));
+                    sendGAEvent();
                     return true;
                 }
                 return false;
@@ -386,8 +455,13 @@
 
         var hasRemoteAgg = !!window.VISITOR_AGG_URL;
         var hasPost = !!window.VISITOR_POST_URL;
-        tryIpApi().then(function (ok) {
+        var skipLocate = !!window.VISITOR_SKIP_LOCATE;
+        (skipLocate ? Promise.resolve(false) : geoLocate()).then(function (ok) {
+            if (ok) return ok;
             if (!ok) return tryIpApiCo();
+            return ok;
+        }).then(function (ok) {
+            if (!ok) return tryIpApi();
             return ok;
         }).then(function () {
             if (hasPost) return sendEvent();
