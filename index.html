@@ -18,19 +18,16 @@
     <meta name="twitter:description" content="Tenure-track Associate Professor at JLU. Research in similarity matrix calibration, noisy label learning, continual learning, and LLMs.">
     <meta name="twitter:image" content="https://cym-mc.github.io/images/cym.jpg">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 </head>
 <body>
     <div class="container">
         <div class="layout">
             <aside class="sidebar">
-                <nav class="side-nav">
+                <h1>Changyi Ma</h1>
+                <nav class="side-nav" aria-label="Primary">
                     <ul>
                         <li><a href="#home">Home</a></li>
                         <li><a href="#publications">Publications</a></li>
-                        <li><a href="#news">News</a></li>
                     </ul>
                 </nav>
             </aside>
@@ -38,18 +35,17 @@
             <main class="main">
             <section id="home" class="section">
                 <div class="profile">
-                    <!-- <div class="profile-image">
-                        <img src="images/cym.jpg" alt="Changyi Ma">
-                    </div> -->
                     <div class="profile-info">
                         <h2>Dr. Changyi Ma</h2>
-                        <!-- <p class="title">Tenure-track Associate Professor</p> -->
-                        <p class="institution">School of Artificial Intelligence, Jilin University (JLU)</p>
+                        <p class="institution">Tenure-track Associate Professor, School of Artificial Intelligence, Jilin University</p>
+                        <p class="contact-links">
+                            <a href="mailto:changyima@jlu.edu.cn">changyima@jlu.edu.cn</a>
+                        </p>
                     </div>
                 </div>
 
                 <div class="bio">
-                    <h3>Brief Biography</h3>
+                    <h3>Biography</h3>
                     <p>Dr. Changyi Ma joined the School of Artificial Intelligence at Jilin University (JLU) in 2025 as a tenure-track Associate Professor. She received her Ph.D. degree from The Chinese University of Hong Kong (CUHK-Shenzhen) (QS #36, 2025), advised by Prof. Shuguang Cui (IEEE Fellow) and Prof. Wenye Li. She had received the Presidential Award for Outstanding Doctoral Student.</p>
                     <p>Her research interests include similarity matrix calibration, noisy label learning, continual learning, and large language models (LLMs).</p>
                     
@@ -60,7 +56,7 @@
             <section id="research" class="section">
                 <h2>Research</h2>
                 <div class="research-interests">
-                    <h3>My current research interest:</h3>
+                    <h3>Current interests</h3>
                     <ul>
                         <li>Similarity Matrix Calibration</li>
                         <li>Noisy Label Learning</li>
@@ -75,6 +71,10 @@
             <section id="news" class="section">
                 <h2>News</h2>
                 <div class="news-list">
+                    <div class="news-item">
+                        <span class="news-date">2026</span>
+                        <span class="news-content">Two papers are accepted by ICML!</span>
+                    </div>
                     <div class="news-item">
                         <span class="news-date">2025.09</span>
                         <span class="news-content">One paper is accepted by NeurIPS 2025!</span>
@@ -99,6 +99,12 @@
                 <h2>Selected Publications <span class="pub-note">1 denotes co-first authors</span></h2>
                 <div class="publications-list">
                     <div class="publication-item">
+                        <h3>2026</h3>
+                        <p><strong>Reinforcement Fine-Tuning Naturally Mitigates Forgetting in Continual Post-Training.</strong></p>
+                        <p>Song Lai, Haohan Zhao, Rong Feng, <strong>Changyi Ma</strong>, Wenzhuo Liu, Hongbo Zhao, Xi Lin, Dong Yi, Min Xie, Qingfu Zhang, Hongbin Liu, Gaofeng Meng, Fei Zhu.</p>
+                        <p><em>ICML</em>, 2026.</p>
+                    </div>
+                    <div class="publication-item">
                         <h3>2025</h3>
                         <p><strong>Gradient-Guided Epsilon Constraint Method for Online Continual Learning.</strong></p>
                         <p>Song Lai<sup>1</sup>, <strong>Changyi Ma</strong><sup>1</sup>, Fei Zhu, Zhe Zhao, Xi Lin, Gaofeng Meng, Qingfu Zhang.</p>
@@ -109,12 +115,6 @@
                         <p>Xiao Chen<sup>1</sup>, <strong>Changyi Ma</strong><sup>1</sup>, Wenqi Fan, Zhaoxiang Zhang, Qing Li.</p>
                         <p><em>ACL (Findings)</em>, 2025.</p>
                     </div>
-                    <div class="publication-item">
-                        <p><strong>Reinforcement Fine-Tuning Naturally Mitigates Forgetting in Continual Post-Training.</strong></p>
-                        <p>Song Lai, Haohan Zhao, Rong Feng, <strong>Changyi Ma</strong>, Wenzhuo Liu, Hongbo Zhao, Xi Lin, Dong Yi, Min Xie, Qingfu Zhang, Hongbin Liu, Gaofeng Meng, Fei Zhu.</p>
-                        <p><em>CoRR</em>, 2025.</p>
-                    </div>
-
                     <div class="publication-item">
                         <h3>2024</h3>
                         <p><strong>A Fast Similarity Matrix Calibration Method with Incomplete Query.</strong></p>
@@ -150,20 +150,6 @@
                     </div>
                 </div>
             </section>
-
-            <!-- <section id="visitors" class="section">
-                <h2>Visitors</h2>
-                <div class="visitor-toolbar">
-                    <button id="btn-markers" class="btn">Markers</button>
-                    <button id="btn-heat" class="btn">Heatmap</button>
-                    <button id="btn-expand" class="btn">Expand</button>
-                </div>
-                <div class="visitor-stats">
-                    <span class="stat"><span class="label">Total Visits</span><span id="stat-total">0</span></span>
-                    <span class="stat"><span class="label">Locations</span><span id="stat-locs">0</span></span>
-                </div>
-                <div id="visitor-map"></div>
-            </section> -->
             </main>
         </div>
 
@@ -171,8 +157,6 @@
             <p>&copy; 2025 Changyi Ma. All rights reserved.</p>
         </footer>
     </div>
-    <!-- <script>window.VISITOR_SKIP_LOCATE = true;</script> -->
-    <!-- <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> -->
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         var list = document.querySelector('#news .news-list');
@@ -204,8 +188,6 @@
         }
     });
     </script>
-    <!-- <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script> -->
-    <!-- <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script> -->
     <script>
     (function(){
         var id = window.GA_MEASUREMENT_ID;
@@ -221,10 +203,5 @@
         gtag('config', id);
     })();
     </script>
-    <!-- <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // visitor module disabled
-    });
-    </script> -->
 </body>
 </html>
